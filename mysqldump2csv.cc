@@ -217,7 +217,7 @@ int main(int argc, char** argv)
 				help();
 				return 0;
 			case 'n':
-				n_out_files = std::stoull(optarg);
+				n_out_files = atoll(optarg);
 				break;
 			case 'o':
 				output_base = optarg;

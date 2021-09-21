@@ -113,7 +113,7 @@ int main(int argc, char** argv)
 	size_t block_size = (1UL << 30); // 1 GB
 
 	if (argc >= 3)
-		block_size = std::stoull(argv[2]);
+		block_size = atoll(argv[2]);
 
 	Mmap_cat m(argv[1], block_size);
 
