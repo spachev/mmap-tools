@@ -27,9 +27,9 @@ public:
 	{
 		sys_errno = errno;
 		char buf[128];
-		strerror_r(sys_errno, buf, sizeof(buf));
+		char* sys_msg = strerror_r(sys_errno, buf, sizeof(buf));
 		msg += ": ";
-		msg += buf;
+		msg += sys_msg;
 	}
 
 	const char* what() const noexcept

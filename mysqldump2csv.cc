@@ -38,6 +38,7 @@ void MySQL_dump_parser::handle_initial(char c)
 		if (line_match_p == line_match_end)
 		{
 			state = EXPECT_OPEN_PAREN;
+			line_match_p = line_match_start;
 		}
 
 		return;
@@ -106,16 +107,6 @@ void MySQL_dump_parser::handle_expect_eol(char c)
 	}
 }
 
-void MySQL_dump_parser::out_append(char c)
-{
-	*cur_out << c;
-}
-
-void MySQL_dump_parser::out_append(const char* s)
-{
-	*cur_out << s;
-}
-
 void MySQL_dump_parser::next_out()
 {
 	cur_out++;
@@ -124,33 +115,31 @@ void MySQL_dump_parser::next_out()
 }
 
 
-void MySQL_dump_parser::val_buf_append(char c)
-{
-	val_buf += c;
-}
-
 void MySQL_dump_parser::process_val_buf()
 {
 	if (val_buf == "NULL")
 	{
-		out_append("\\N");
+		out_append("\\N", 2);
 	}
 	else
-		out_append(val_buf.c_str());
+		out_append(val_buf.c_str(), val_buf.length());
 
 	val_buf = "";
 }
 
 void MySQL_dump_parser::open_outs()
 {
-	outs = new std::ofstream[n_out_files];
+	outs = new IO_buf[n_out_files];
 
 	for (size_t i = 0; i < n_out_files; i++)
 	{
 		std::stringstream fname;
 		fname << output_base << (i+1) << ".csv";
-		outs[i].open(fname.str());
-		if (!outs[i])
+		try
+		{
+			outs[i].init(fname.str().c_str());
+		}
+		catch (std::exception e)
 		{
 			std::string msg = "Could not open " + fname.str() + " for writing";
 			throw Mmap_exception(msg);

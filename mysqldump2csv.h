@@ -2,7 +2,7 @@
 #define MYSQL_DUMP_PARSER_H
 
 #include "mmap_base.h"
-#include <fstream>
+#include "iobuf.h"
 
 class MySQL_dump_parser: public Mmap_base
 {
@@ -15,18 +15,31 @@ protected:
 	const char* line_match_p;
 	const char* line_match_end;
 	const char* line_match_start;
-	std::ofstream* outs;
-	std::ofstream* cur_out;
-	std::ofstream* outs_end;
+	IO_buf* outs;
+	IO_buf* cur_out;
+	IO_buf* outs_end;
 	void handle_initial(char c);
 	void handle_expect_open_paren(char c);
 	void handle_in_values(char c);
 	void handle_in_quote(char c);
 	void handle_in_esc(char c);
 	void handle_expect_eol(char c);
-	void out_append(char c);
-	void out_append(const char* s);
-	void val_buf_append(char c);
+
+	void out_append(char c)
+	{
+		cur_out->append(c);
+	}
+
+	void out_append(const char* s, size_t len)
+	{
+		cur_out->append(s, len);
+	}
+
+	void val_buf_append(char c)
+	{
+		val_buf += c;
+	}
+
 	void process_val_buf();
 	void open_outs();
 	void close_outs();
