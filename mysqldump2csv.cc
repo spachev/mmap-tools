@@ -233,6 +233,11 @@ int main(int argc, char** argv)
 		 p.process_file();
 		 p.end();
 	 }
+	 catch (Mmap_exception e)
+	 {
+		 std::cerr << "Error: " << e.what() << std::endl;
+		 return 1;
+	 }
 	 catch (std::exception e)
 	 {
 		 std::cerr << "Error: " << e.what() << std::endl;
