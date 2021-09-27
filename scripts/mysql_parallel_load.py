@@ -83,6 +83,15 @@ def monitor_progress(start_write_rows):
         last_ts = cur_ts
         time.sleep(5) # todo - configurable sleep interval
 
+def enable_local_infile(cursor):
+    # TODO: restore the original setting value when we are done
+    cursor.execute("select @@local_infile")
+    res = cursor.fetchall()
+    val = res[0][0]
+    if val == "1":
+        return # good to go
+    cursor.execute("set global local_infile=1") # exception if not enough privs
+    info("Enabled local_infile")
 
 def get_db_cursor():
     global con_args
@@ -154,6 +163,13 @@ if not csv_files:
 threads = []
 done = False
 cursor = get_db_cursor()
+try:
+    enable_local_infile(cursor)
+except Exception, e:
+    error("Could not enable local_infile: {} Make sure the user {} has sufficient privileges".
+        format(e, args.user))
+    sys.exit(1)
+
 monitor_th = Thread(target=monitor_progress, args=(get_write_rows(cursor),))
 monitor_th.start()
 for f in csv_files:
